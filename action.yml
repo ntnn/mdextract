@@ -1,0 +1,69 @@
+name: 'Extract Code Blocks from Markdown'
+description: 'Extract code blocks from markdown files with filtering by language and tags'
+author: 'ntnn'
+branding:
+  icon: 'code'
+  color: 'blue'
+
+inputs:
+  input:
+    description: 'Path to the input markdown file'
+    required: true
+  output:
+    description: 'Path to the output file, or "-" for stdout (default: "-")'
+    required: false
+    default: '-'
+  language:
+    description: 'Language to filter code blocks (e.g., go, python, yaml)'
+    required: false
+    default: ''
+  tags:
+    description: 'Comma-separated tags to filter code blocks'
+    required: false
+    default: ''
+  include-empty:
+    description: 'Whether to include code blocks without any tags (default: true)'
+    required: false
+    default: 'true'
+  include-comments:
+    description: 'Whether to include code blocks inside HTML comments (default: true)'
+    required: false
+    default: 'true'
+
+outputs:
+  extracted:
+    description: 'The extracted code blocks as a string (only when output is "-")'
+    value: ${{ steps.extract.outputs.code }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Build mdextract
+      shell: bash
+      run: |
+        cd ${{ github.action_path }}
+        make build
+
+    - name: Extract code blocks
+      id: extract
+      shell: bash
+      run: |
+        out="${{ inputs.output }}"
+        if [ "$out" = "-" ]; then
+          out="$(mktemp)"
+        fi
+
+        "${{ github.action_path }}/bin/mdextract" \
+          -input="${{ inputs.input }}" \
+          -output="${{ inputs.output }}" \
+          -language="${{ inputs.language }} \
+          -tags="${{ inputs.tags }} \
+          -include-empty=${{ inputs.include-empty }} \
+          -include-comments=${{ inputs.include-comments }}
+
+        if [ "${{ inputs.output }}" = "-" ]; then
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "code<<$EOF" >> $GITHUB_OUTPUT
+          cat "$out" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
+        fi

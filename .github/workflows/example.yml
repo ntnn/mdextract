@@ -1,0 +1,55 @@
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Example 1: Extract Go code to a file
+  extract-go-code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+
+      - name: Extract Go code from test markdown
+        uses: ./
+        with:
+          input: 'pkg/mdextract/test.md'
+          output: 'extracted-go.txt'
+          language: 'go'
+      - run: cat extracted-go.txt
+
+  # Example 2: Extract code with specific tags
+  extract-with-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+      - name: Extract CI-tagged Go code
+        uses: ./
+        with:
+          input: 'pkg/mdextract/test.md'
+          output: 'ci-code.txt'
+          language: 'go'
+          tags: 'ci'
+      - run: |
+          cat ci-code.txt
+
+  # Example 3: Use extracted code in subsequent steps
+  extract-to-output:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+      - name: Extract YAML code to output variable
+        id: extract
+        uses: ./
+        with:
+          input: 'pkg/mdextract/test.md'
+          language: 'json'
+          # output defaults to '-' (stdout), which populates the output variable
+
+      - run: |
+          echo "${{ steps.extract.outputs.extracted-code }}" | jq .a.b
