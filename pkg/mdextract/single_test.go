@@ -43,7 +43,8 @@ func TestSingle_AcceptBlock(t *testing.T) {
 			block := &ast.CodeBlock{
 				Info: []byte(cas.info),
 			}
-			result := cas.single.acceptBlock(block)
+			lang, tags := parseTag(block.Info)
+			result := cas.single.acceptBlock(lang, tags)
 			require.Equal(t, cas.expected, result)
 		})
 	}

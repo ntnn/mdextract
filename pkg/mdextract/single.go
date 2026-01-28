@@ -62,8 +62,7 @@ func parseTag(b []byte) (string, []string) {
 	return s[0], s[1:]
 }
 
-func (single Single) acceptBlock(block *ast.CodeBlock) bool {
-	lang, tags := parseTag(block.Info)
+func (single Single) acceptBlock(lang string, tags []string) bool {
 	if single.Language != "" && lang != single.Language {
 		return false
 	}
@@ -99,11 +98,11 @@ func (single Single) Extract(data []byte) (string, error) {
 	ast.WalkFunc(node, ast.NodeVisitorFunc(func(node ast.Node, entering bool) ast.WalkStatus {
 		switch n := node.(type) {
 		case *ast.CodeBlock:
-			if !single.acceptBlock(n) {
+			lang, tags := parseTag(n.Info)
+			if !single.acceptBlock(lang, tags) {
 				return ast.GoToNext
 			}
 			builder.Write(n.Literal)
-			// builder.WriteString("\n")
 		case *ast.HTMLBlock:
 			// an HTML block might be a comment with a code block that
 			// should only be executed in e.g. CI
