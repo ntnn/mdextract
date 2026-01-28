@@ -7,7 +7,7 @@ branding:
 
 inputs:
   input:
-    description: 'Path to the input markdown file'
+    description: 'Path(s) to the input markdown file(s)'
     required: true
   output:
     description: 'Path to the output file, or "-" for stdout (default: "-")'
@@ -21,14 +21,14 @@ inputs:
     description: 'Comma-separated tags to filter code blocks'
     required: false
     default: ''
-  include-empty:
-    description: 'Whether to include code blocks without any tags (default: true)'
+  exclude-tags:
+    description: 'Comma-separated tags to exclude code blocks'
     required: false
-    default: 'true'
-  include-comments:
-    description: 'Whether to include code blocks inside HTML comments (default: true)'
+    default: ''
+  exclude-comments:
+    description: 'Whether to include code blocks inside HTML comments (default: false)'
     required: false
-    default: 'true'
+    default: 'false'
 
 outputs:
   extracted:
@@ -49,17 +49,17 @@ runs:
       shell: bash
       run: |
         out="${{ inputs.output }}"
-        if [ "$out" = "-" ]; then
+        if [ "${{ inputs.output }}" = "-" ]; then
           out="$(mktemp)"
         fi
 
         "${{ github.action_path }}/bin/mdextract" \
-          -input="${{ inputs.input }}" \
-          -output="${{ inputs.output }}" \
-          -language="${{ inputs.language }} \
-          -tags="${{ inputs.tags }} \
-          -include-empty=${{ inputs.include-empty }} \
-          -include-comments=${{ inputs.include-comments }}
+          -output="$out" \
+          -language="${{ inputs.language }}" \
+          -tags="${{ inputs.tags }}" \
+          -exclude-tags="${{ inputs.exclude-tags }}" \
+          -exclude-comments="${{ inputs.exclude-comments }}" \
+          ${{ inputs.input }}
 
         if [ "${{ inputs.output }}" = "-" ]; then
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)

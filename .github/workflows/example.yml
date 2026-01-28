@@ -6,50 +6,54 @@ on:
     branches: [main]
 
 jobs:
-  # Example 1: Extract Go code to a file
-  extract-go-code:
+  extract-shell:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
-
-      - name: Extract Go code from test markdown
-        uses: ./
         with:
-          input: 'pkg/mdextract/test.md'
-          output: 'extracted-go.txt'
-          language: 'go'
-      - run: cat extracted-go.txt
-
-  # Example 2: Extract code with specific tags
-  extract-with-tags:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
-      - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
-      - name: Extract CI-tagged Go code
-        uses: ./
+          go-version-file: go.mod
+      - uses: ./
         with:
-          input: 'pkg/mdextract/test.md'
-          output: 'ci-code.txt'
-          language: 'go'
-          tags: 'ci'
+          input: .github/workflows/example.md
+          output: extracted.sh
+          language: sh
       - run: |
-          cat ci-code.txt
+          sh -xe extracted.sh | tee extracted.log
+          grep -q 'hello, world from shell' extracted.log
 
-  # Example 3: Use extracted code in subsequent steps
-  extract-to-output:
+  extract-bash-with-tags:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
-      - name: Extract YAML code to output variable
-        id: extract
-        uses: ./
         with:
-          input: 'pkg/mdextract/test.md'
-          language: 'json'
-          # output defaults to '-' (stdout), which populates the output variable
-
+          go-version-file: go.mod
+      - uses: ./
+        with:
+          input: .github/workflows/example.md
+          output: extracted.bash
+          language: bash
+          tags: ci
       - run: |
-          echo "${{ steps.extract.outputs.extracted-code }}" | jq .a.b
+          bash -xe extracted.bash | tee extracted.log
+          grep -q 'hello, world from bash with ci tag' extracted.log
+          grep -q 'hello, world from bash with ci and slow' extracted.log
+
+  extract-bash-exclude-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
+        with:
+          go-version-file: go.mod
+      - uses: ./
+        with:
+          input: .github/workflows/example.md
+          output: extracted.bash
+          language: bash
+          tags: ci
+          exclude-tags: slow
+      - run: |
+          bash -xe extracted.bash | tee extracted.log
+          grep -q 'hello, world from bash with ci' extracted.log
