@@ -49,6 +49,42 @@ func TestSingle_AcceptBlock(t *testing.T) {
 	}
 }
 
+func TestSingle_Extract(t *testing.T) {
+	t.Parallel()
+
+	cases := map[string]struct {
+		single   Single
+		input    []string
+		expected []string
+	}{
+		"html comment with <!--": {
+			single: Single{
+				Language: "bash",
+			},
+			input: []string{
+				"Some text",
+				"<!--",
+				"```bash",
+				"code block inside comment",
+				"```",
+				"-->",
+			},
+			expected: []string{
+				"code block inside comment",
+			},
+		},
+	}
+
+	for title, cas := range cases {
+		t.Run(title, func(t *testing.T) {
+			t.Parallel()
+			parsed, err := cas.single.Extract([]byte(strings.Join(cas.input, "\n")))
+			require.NoError(t, err)
+			assert.Equal(t, cas.expected, strings.Split(strings.TrimSpace(parsed), "\n"))
+		})
+	}
+}
+
 func TestSingle_ExtractFromFile(t *testing.T) {
 	t.Parallel()
 
