@@ -36,6 +36,9 @@ func TestFile_AcceptSection(t *testing.T) {
 		"langauge tag match":     {true, "go ci", Options{Language: "go", Tags: []string{"ci"}}},
 		"langauge tags match":    {true, "go ci export", Options{Language: "go", Tags: []string{"ci", "export"}}},
 		"langauge tags no match": {false, "go export", Options{Language: "go", Tags: []string{"ci", "export"}}},
+
+		"exclude tags match":    {false, "go ci export", Options{Language: "go", Tags: []string{"ci"}, ExcludeTags: []string{"export"}}},
+		"exclude tags no match": {true, "go ci noexport", Options{Language: "go", Tags: []string{"ci"}, ExcludeTags: []string{"export"}}},
 	}
 
 	for title, cas := range cases {

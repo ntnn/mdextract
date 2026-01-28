@@ -19,6 +19,11 @@ type Options struct {
 	// is split by spaces and treated as tags. Only tags that have all
 	// specified tags will be extracted.
 	Tags []string
+	// ExcludeTags allows excluding code blocks that contain any of
+	// the specified tags. ExcludeTags supersedes Tags, e.g. if
+	// a codeblock has both a tag in Tags and ExcludeTags, it will be
+	// excluded.
+	ExcludeTags []string
 	// IncludeEmpty determines whether code blocks without any tags
 	// are included regardless of the Tags. The language still applies.
 	// Default: true
@@ -112,6 +117,13 @@ func (f *File) acceptSection(block *ast.CodeBlock) bool {
 		}
 		for _, tag := range f.opts.Tags {
 			if !slices.Contains(tags, tag) {
+				return false
+			}
+		}
+	}
+	if len(f.opts.ExcludeTags) > 0 {
+		for _, exTag := range f.opts.ExcludeTags {
+			if slices.Contains(tags, exTag) {
 				return false
 			}
 		}

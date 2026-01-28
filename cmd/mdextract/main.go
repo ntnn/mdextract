@@ -29,6 +29,7 @@ var (
 	fOutput          = flag.String("output", "-", "Path to the output file, defaults to stdout")
 	fLanguage        = flag.String("language", "", "Language to filter code blocks")
 	fTags            = flag.String("tags", "", "Tags to filter code blocks, comma-separated")
+	fExcludeTags     = flag.String("exclude-tags", "", "Tags to exclude code blocks, comma-separated")
 	fIncludeEmpty    = flag.Bool("include-empty", true, "Whether to include code blocks without any tags")
 	fIncludeComments = flag.Bool("include-comments", true, "Whether to include code blocks inside HTML comments")
 )
@@ -47,6 +48,7 @@ func run(ctx context.Context) error {
 	f, err := mdextract.ParseFile(*fInput, mdextract.Options{
 		Language:        *fLanguage,
 		Tags:            split(*fTags),
+		ExcludeTags:     split(*fExcludeTags),
 		IncludeEmpty:    fIncludeEmpty,
 		IncludeComments: fIncludeComments,
 	})
