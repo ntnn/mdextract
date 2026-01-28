@@ -2,20 +2,16 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/ntnn/mdextract/pkg/mdextract"
 )
 
 func main() {
-	flag.Parse()
-
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
@@ -24,44 +20,38 @@ func main() {
 	}
 }
 
-var (
-	fInput           = flag.String("input", "", "Path to the input file")
-	fOutput          = flag.String("output", "-", "Path to the output file, defaults to stdout")
-	fLanguage        = flag.String("language", "", "Language to filter code blocks")
-	fTags            = flag.String("tags", "", "Tags to filter code blocks, comma-separated")
-	fExcludeTags     = flag.String("exclude-tags", "", "Tags to exclude code blocks, comma-separated")
-	fIncludeEmpty    = flag.Bool("include-empty", true, "Whether to include code blocks without any tags")
-	fIncludeComments = flag.Bool("include-comments", true, "Whether to include code blocks inside HTML comments")
-)
-
-func split(s string) []string {
-	if len(s) == 0 {
-		return []string{}
-	}
-	return strings.Split(s, ",")
-}
-
 func run(ctx context.Context) error {
-	if *fInput == "" {
-		return fmt.Errorf("input file is required")
-	}
-	f, err := mdextract.ParseFile(*fInput, mdextract.Options{
-		Language:        *fLanguage,
-		Tags:            split(*fTags),
-		ExcludeTags:     split(*fExcludeTags),
-		IncludeEmpty:    fIncludeEmpty,
-		IncludeComments: fIncludeComments,
-	})
-	if err != nil {
+	s := &mdextract.Single{}
+	fs := s.FlagSet()
+	fOutput := fs.String("output", "-", "Output file ('-' for stdout)")
+	if err := fs.Parse(os.Args[1:]); err != nil {
 		return err
 	}
 
-	out := strings.Join(f.Sections, "\n")
-
-	if *fOutput == "-" {
-		fmt.Println(out)
-		return nil
+	if fs.NArg() == 0 {
+		fs.PrintDefaults()
+		return fmt.Errorf("no input files specified")
 	}
 
-	return os.WriteFile(*fOutput, []byte(out), 0o644)
+	f := os.Stdout
+	if *fOutput != "-" {
+		var err error
+		f, err = os.OpenFile(*fOutput, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+	}
+
+	for _, input := range fs.Args() {
+		out, err := s.ExtractFromFile(input)
+		if err != nil {
+			return err
+		}
+		if _, err := f.Write([]byte(out)); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
