@@ -43,7 +43,7 @@ func (single *Single) FlagSet() *flag.FlagSet {
 	fs := flag.NewFlagSet("single", flag.ExitOnError)
 	fs.StringVar(&single.Language, "language", "", "Language to filter code blocks by")
 	fs.Func("tags", "Tags to filter code blocks, comma-separated", func(s string) error {
-		single.ExcludeTags = split(s)
+		single.Tags = split(s)
 		return nil
 	})
 	fs.Func("exclude-tags", "Tags to exclude code blocks, comma-separated", func(s string) error {
