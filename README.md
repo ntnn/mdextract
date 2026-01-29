@@ -18,6 +18,17 @@ package main
 ```
 -->
 
+### Multi mode and file tags
+
+mdextract can be run in multi mode, in which case code blocks are
+extracted into multiple files based on the `file` tag:
+
+    ```python ci file=script.py
+    print("This code block will be extracted to script.py")
+    ```
+
+Blocks without a `file` tag are ignored in multi mode.
+
 ### Examples
 
 <!--
