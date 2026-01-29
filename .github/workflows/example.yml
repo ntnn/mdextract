@@ -17,8 +17,7 @@ jobs:
         with:
           input: README.md
           output: extracted.sh
-          language: bash
-          tags: ci
+          tags: bash,ci
       - run: sh -xe extracted.sh
 
   extract-shell:
@@ -32,7 +31,7 @@ jobs:
         with:
           input: .github/workflows/example.md
           output: extracted.sh
-          language: sh
+          tags: sh
       - run: |
           sh -xe extracted.sh | tee extracted.log
           grep -q 'hello, world from shell' extracted.log
@@ -48,8 +47,7 @@ jobs:
         with:
           input: .github/workflows/example.md
           output: extracted.bash
-          language: bash
-          tags: ci
+          tags: bash,ci
       - run: |
           bash -xe extracted.bash | tee extracted.log
           grep -q 'hello, world from bash with ci tag' extracted.log
@@ -66,8 +64,7 @@ jobs:
         with:
           input: .github/workflows/example.md
           output: extracted.bash
-          language: bash
-          tags: ci
+          tags: bash,ci
           exclude-tags: slow
       - run: |
           bash -xe extracted.bash | tee extracted.log

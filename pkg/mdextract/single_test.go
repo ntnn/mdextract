@@ -25,17 +25,17 @@ func TestSingle_AcceptBlock(t *testing.T) {
 		"tag match with multiple":   {true, "go ci test", Single{Tags: []string{"ci"}}},
 		"tag no match with partial": {false, "go citation", Single{Tags: []string{"ci"}}},
 
-		"langauge match":      {true, "go ci", Single{Language: "go"}},
-		"language no match":   {false, "python ci", Single{Language: "go"}},
-		"language empty":      {false, "ci", Single{Language: "go"}},
-		"language only match": {true, "go", Single{Language: "go"}},
+		"language match":      {true, "go ci", Single{Tags: []string{"go"}}},
+		"language no match":   {false, "python ci", Single{Tags: []string{"go"}}},
+		"language empty":      {false, "ci", Single{Tags: []string{"go"}}},
+		"language only match": {true, "go", Single{Tags: []string{"go"}}},
 
-		"langauge tag match":     {true, "go ci", Single{Language: "go", Tags: []string{"ci"}}},
-		"langauge tags match":    {true, "go ci export", Single{Language: "go", Tags: []string{"ci", "export"}}},
-		"langauge tags no match": {false, "go export", Single{Language: "go", Tags: []string{"ci", "export"}}},
+		"langauge tag match":     {true, "go ci", Single{Tags: []string{"go", "ci"}}},
+		"langauge tags match":    {true, "go ci export", Single{Tags: []string{"go", "ci", "export"}}},
+		"langauge tags no match": {false, "go export", Single{Tags: []string{"go", "ci", "export"}}},
 
-		"exclude tags match":    {false, "go ci export", Single{Language: "go", Tags: []string{"ci"}, ExcludeTags: []string{"export"}}},
-		"exclude tags no match": {true, "go ci noexport", Single{Language: "go", Tags: []string{"ci"}, ExcludeTags: []string{"export"}}},
+		"exclude tags match":    {false, "go ci export", Single{Tags: []string{"go", "ci"}, ExcludeTags: []string{"export"}}},
+		"exclude tags no match": {true, "go ci noexport", Single{Tags: []string{"go", "ci"}, ExcludeTags: []string{"export"}}},
 	}
 
 	for title, cas := range cases {
@@ -43,8 +43,8 @@ func TestSingle_AcceptBlock(t *testing.T) {
 			block := &ast.CodeBlock{
 				Info: []byte(cas.info),
 			}
-			lang, tags := parseTag(block.Info)
-			result := cas.single.acceptBlock(lang, tags)
+			tags := parseTag(block.Info)
+			result := cas.single.acceptBlock(tags)
 			require.Equal(t, cas.expected, result)
 		})
 	}
@@ -60,7 +60,7 @@ func TestSingle_Extract(t *testing.T) {
 	}{
 		"html comment with <!--": {
 			single: Single{
-				Language: "bash",
+				Tags: []string{"bash"},
 			},
 			input: []string{
 				"Some text",
@@ -114,24 +114,6 @@ func TestSingle_ExtractFromFile(t *testing.T) {
 			expected: []string{
 				"code block with go with tag ci",
 				"code block inside comment with tag ci",
-			},
-		},
-		"tag ci, excluding empty": {
-			single: Single{
-				Tags: []string{"ci"},
-			},
-			expected: []string{
-				"code block with go with tag ci",
-				"code block inside comment with tag ci",
-			},
-		},
-		"tag ci, excluding empty and comments": {
-			single: Single{
-				Tags:            []string{"ci"},
-				ExcludeComments: true,
-			},
-			expected: []string{
-				"code block with go with tag ci",
 			},
 		},
 		"tag ci, excluding comments": {
