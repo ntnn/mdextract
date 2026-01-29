@@ -10,9 +10,13 @@ inputs:
     description: 'Path(s) to the input markdown file(s)'
     required: true
   output:
-    description: 'Path to the output file, or "-" for stdout (default: "-")'
+    description: 'Path to the output file, or "-" for stdout (default: "-", not compatible with multi)'
     required: false
     default: '-'
+  multi:
+    description: 'Extract inputs to multiple files based on the file tag (default: false, not compatible with output)'
+    required: false
+    default: 'false'
   tags:
     description: 'Comma-separated tags to filter code blocks'
     required: false
@@ -45,18 +49,19 @@ runs:
       shell: bash
       run: |
         out="${{ inputs.output }}"
-        if [ "${{ inputs.output }}" = "-" ]; then
+        if [ "${{ inputs.output }}" = "-" ] && [ "${{ input.multi }}" = "false" ]; then
           out="$(mktemp)"
         fi
 
         "${{ github.action_path }}/bin/mdextract" \
           -output="$out" \
+          -multi="${{ inputs.multi }}" \
           -tags="${{ inputs.tags }}" \
           -exclude-tags="${{ inputs.exclude-tags }}" \
           -exclude-comments="${{ inputs.exclude-comments }}" \
           ${{ inputs.input }}
 
-        if [ "${{ inputs.output }}" = "-" ]; then
+        if [ "${{ inputs.output }}" = "-" ] && [ "${{ input.multi }}" = "false" ]; then
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "code<<$EOF" >> $GITHUB_OUTPUT
           cat "$out" >> $GITHUB_OUTPUT
