@@ -44,8 +44,8 @@ func (multi *Multi) ExtractFromFileAndWrite(path string) error {
 	return nil
 }
 
-func parseFileTag(b []byte) (string, string, []string) {
-	lang, tags := parseTag(b)
+func parseFileTag(b []byte) (string, []string) {
+	tags := parseTag(b)
 	var file string
 	var otherTags []string
 	for _, tag := range tags {
@@ -56,7 +56,7 @@ func parseFileTag(b []byte) (string, string, []string) {
 			otherTags = append(otherTags, tag)
 		}
 	}
-	return lang, file, otherTags
+	return file, otherTags
 }
 
 func (multi *Multi) Extract(data []byte) (map[string]string, error) {
@@ -66,11 +66,11 @@ func (multi *Multi) Extract(data []byte) (map[string]string, error) {
 	ast.WalkFunc(node, ast.NodeVisitorFunc(func(node ast.Node, entering bool) ast.WalkStatus {
 		switch n := node.(type) {
 		case *ast.CodeBlock:
-			lang, file, tags := parseFileTag(n.Info)
+			file, tags := parseFileTag(n.Info)
 			if file == "" {
 				return ast.GoToNext
 			}
-			if !multi.acceptBlock(lang, tags) {
+			if !multi.acceptBlock(tags) {
 				return ast.GoToNext
 			}
 			ret[file] += string(n.Literal)

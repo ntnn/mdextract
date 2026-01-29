@@ -1,11 +1,11 @@
 # mdextract
 
 A Go tool and GitHub Action to extract code blocks from markdown files
-with support for filtering by language and tags, as well as extracting
-code blocks form withing HTML comments, e.g. to enable "hidden" code
-blocks that are only relevant for CI but not for human readers.
+with support for filtering by tags, as well as extracting code blocks
+form withing HTML comments, e.g. to enable "hidden" code blocks that are
+only relevant for CI but not for human readers.
 
-`tags` are space-separated identifiers added after the language in code block fences:
+`tags` are words after the backticks on the first line of a fenced code block:
 
     ```go ci test
     // This Go code block has tags: "ci" and "test"
@@ -28,12 +28,12 @@ make build
 
 Extract all Go code blocks:
 ```bash ci
-./bin/mdextract -language go README.md
+./bin/mdextract -tags go README.md
 ```
 
 Extract code blocks with specific tags and write to a file:
 ```bash ci
-./bin/mdextract -language go -tags ci -output extracted.go README.md
+./bin/mdextract -tags go,ci -output extracted.go README.md
 ```
 
 <!--
@@ -63,7 +63,7 @@ this:
 -->
 
 ```bash ci
-./bin/mdextract -language yaml -tags ci -output example.yaml README.md
+./bin/mdextract -tags yaml,ci -output example.yaml README.md
 ```
 
 <!--

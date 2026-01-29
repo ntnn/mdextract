@@ -9,41 +9,39 @@ import (
 
 func TestParseFileTag(t *testing.T) {
 	cases := map[string]struct {
-		input      string
-		lang, file string
-		tags       []string
+		input string
+		file  string
+		tags  []string
 	}{
 		"empty": {
 			input: "",
 		},
 		"only lang": {
 			input: "go",
-			lang:  "go",
+			tags:  []string{"go"},
 		},
 		"only file": {
 			input: " file=main.go",
 			file:  "main.go",
 		},
-		"lang and file": {
+		"tag and file": {
 			input: "python file=script.py",
-			lang:  "python",
 			file:  "script.py",
+			tags:  []string{"python"},
 		},
-		"lang, file and tags": {
+		"tag, file and tags": {
 			input: "js file=app.js tag1 tag2",
-			lang:  "js",
 			file:  "app.js",
-			tags:  []string{"tag1", "tag2"},
+			tags:  []string{"js", "tag1", "tag2"},
 		},
 		"file and tags": {
 			input: " file=config.yaml prod debug",
 			file:  "config.yaml",
 			tags:  []string{"prod", "debug"},
 		},
-		"lang and tags": {
+		"tags": {
 			input: "ruby test unit",
-			lang:  "ruby",
-			tags:  []string{"test", "unit"},
+			tags:  []string{"ruby", "test", "unit"},
 		},
 		"multiple file tags": {
 			input: " file=first.txt file=second.txt tagA",
@@ -54,8 +52,7 @@ func TestParseFileTag(t *testing.T) {
 
 	for title, cas := range cases {
 		t.Run(title, func(t *testing.T) {
-			lang, file, tags := parseFileTag([]byte(cas.input))
-			assert.Equal(t, cas.lang, lang)
+			file, tags := parseFileTag([]byte(cas.input))
 			assert.Equal(t, cas.file, file)
 			assert.Equal(t, cas.tags, tags)
 		})

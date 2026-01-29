@@ -1,5 +1,5 @@
 name: 'Extract Code Blocks from Markdown'
-description: 'Extract code blocks from markdown files with filtering by language and tags'
+description: 'Extract code blocks from markdown files with filtering'
 author: 'ntnn'
 branding:
   icon: 'code'
@@ -13,10 +13,6 @@ inputs:
     description: 'Path to the output file, or "-" for stdout (default: "-")'
     required: false
     default: '-'
-  language:
-    description: 'Language to filter code blocks (e.g., go, python, yaml)'
-    required: false
-    default: ''
   tags:
     description: 'Comma-separated tags to filter code blocks'
     required: false
@@ -55,7 +51,6 @@ runs:
 
         "${{ github.action_path }}/bin/mdextract" \
           -output="$out" \
-          -language="${{ inputs.language }}" \
           -tags="${{ inputs.tags }}" \
           -exclude-tags="${{ inputs.exclude-tags }}" \
           -exclude-comments="${{ inputs.exclude-comments }}" \

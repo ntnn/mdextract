@@ -14,12 +14,10 @@ import (
 // Single goes through a markdown document and extracts code blocks
 // matching the criteria as one single concatenated string.
 type Single struct {
-	// Langauge determines the language of the code blocks to extract.
-	// If empty, all languages are accepted.
-	Language string
-	// Tags allows filtering code blocks. The content after the language
-	// is split by spaces and treated as tags. Only code blocks that
-	// have all specified tags will be extracted.
+	// Tags allows filtering code blocks. Everything on the first line
+	// of a fenced code block is treated as a tag, including the
+	// language.
+	// Only code blocks that have all specified tags will be extracted.
 	Tags []string
 	// ExcludeTags allows excluding code blocks that contain any of
 	// the specified tags. ExcludeTags supersedes Tags, e.g. if
@@ -41,7 +39,6 @@ func split(s string) []string {
 
 func (single *Single) FlagSet() *flag.FlagSet {
 	fs := flag.NewFlagSet("single", flag.ExitOnError)
-	fs.StringVar(&single.Language, "language", "", "Language to filter code blocks by")
 	fs.Func("tags", "Tags to filter code blocks, comma-separated", func(s string) error {
 		single.Tags = split(s)
 		return nil
@@ -54,18 +51,22 @@ func (single *Single) FlagSet() *flag.FlagSet {
 	return fs
 }
 
-func parseTag(b []byte) (string, []string) {
+func parseTag(b []byte) []string {
 	if len(b) == 0 {
-		return "", []string{}
+		return []string{}
 	}
-	s := strings.Split(string(b), " ")
-	return s[0], s[1:]
+	ret := []string{}
+	for _, tag := range strings.Split(string(b), " ") {
+		tag = strings.TrimSpace(tag)
+		if len(tag) == 0 {
+			continue
+		}
+		ret = append(ret, tag)
+	}
+	return ret
 }
 
-func (single Single) acceptBlock(lang string, tags []string) bool {
-	if single.Language != "" && lang != single.Language {
-		return false
-	}
+func (single Single) acceptBlock(tags []string) bool {
 	if len(single.Tags) > 0 {
 		for _, tag := range single.Tags {
 			if !slices.Contains(tags, tag) {
@@ -98,8 +99,8 @@ func (single Single) Extract(data []byte) (string, error) {
 	ast.WalkFunc(node, ast.NodeVisitorFunc(func(node ast.Node, entering bool) ast.WalkStatus {
 		switch n := node.(type) {
 		case *ast.CodeBlock:
-			lang, tags := parseTag(n.Info)
-			if !single.acceptBlock(lang, tags) {
+			tags := parseTag(n.Info)
+			if !single.acceptBlock(tags) {
 				return ast.GoToNext
 			}
 			builder.Write(n.Literal)
