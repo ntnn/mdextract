@@ -43,7 +43,8 @@ func TestSingle_AcceptBlock(t *testing.T) {
 			block := &ast.CodeBlock{
 				Info: []byte(cas.info),
 			}
-			result := cas.single.acceptBlock(block)
+			lang, tags := parseTag(block.Info)
+			result := cas.single.acceptBlock(lang, tags)
 			require.Equal(t, cas.expected, result)
 		})
 	}
@@ -170,7 +171,7 @@ func TestSingle_ExtractFromFile(t *testing.T) {
 	for title, cas := range cases {
 		t.Run(title, func(t *testing.T) {
 			t.Parallel()
-			parsed, err := cas.single.ExtractFromFile("test.md")
+			parsed, err := cas.single.ExtractFromFile("single.md")
 			require.NoError(t, err)
 			assert.Equal(t, cas.expected, strings.Split(strings.TrimSpace(parsed), "\n"))
 		})
