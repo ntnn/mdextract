@@ -1,4 +1,5 @@
 GO ?= go
+CONTAINER_TOOL ?= docker
 
 .PHONY: check
 check: fmt lint test
@@ -7,6 +8,10 @@ check: fmt lint test
 build:
 	@mkdir -p bin
 	$(GO) build -o ./bin/mdextract ./cmd/mdextract
+
+.PHONY: docker-build
+docker-build:
+	$(CONTAINER_TOOL) build -t mdextract:dev .
 
 .PHONY: fmt
 fmt:
