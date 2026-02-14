@@ -30,16 +30,30 @@ func TestSingle_AcceptBlock(t *testing.T) {
 		"language empty":      {false, "ci", Single{Tags: []string{"go"}}},
 		"language only match": {true, "go", Single{Tags: []string{"go"}}},
 
-		"langauge tag match":     {true, "go ci", Single{Tags: []string{"go", "ci"}}},
-		"langauge tags match":    {true, "go ci export", Single{Tags: []string{"go", "ci", "export"}}},
-		"langauge tags no match": {false, "go export", Single{Tags: []string{"go", "ci", "export"}}},
+		"language tag match":     {true, "go ci", Single{Tags: []string{"go", "ci"}}},
+		"language tags match":    {true, "go ci export", Single{Tags: []string{"go", "ci", "export"}}},
+		"language tags no match": {false, "go export", Single{Tags: []string{"go", "ci", "export"}}},
 
-		"exclude tags match":    {false, "go ci export", Single{Tags: []string{"go", "ci"}, ExcludeTags: []string{"export"}}},
-		"exclude tags no match": {true, "go ci noexport", Single{Tags: []string{"go", "ci"}, ExcludeTags: []string{"export"}}},
+		"exclude tags match": {
+			false, "go ci export",
+			Single{
+				Tags:        []string{"go", "ci"},
+				ExcludeTags: []string{"export"},
+			},
+		},
+		"exclude tags no match": {
+			true, "go ci noexport",
+			Single{
+				Tags:        []string{"go", "ci"},
+				ExcludeTags: []string{"export"},
+			},
+		},
 	}
 
 	for title, cas := range cases {
 		t.Run(title, func(t *testing.T) {
+			t.Parallel()
+
 			block := &ast.CodeBlock{
 				Info: []byte(cas.info),
 			}
@@ -79,6 +93,7 @@ func TestSingle_Extract(t *testing.T) {
 	for title, cas := range cases {
 		t.Run(title, func(t *testing.T) {
 			t.Parallel()
+
 			parsed, err := cas.single.Extract([]byte(strings.Join(cas.input, "\n")))
 			require.NoError(t, err)
 			assert.Equal(t, cas.expected, strings.Split(strings.TrimSpace(parsed), "\n"))
@@ -153,12 +168,12 @@ func TestSingle_ExtractFromFile(t *testing.T) {
 	for title, cas := range cases {
 		t.Run(title, func(t *testing.T) {
 			t.Parallel()
+
 			parsed, err := cas.single.ExtractFromFile("single.md")
 			require.NoError(t, err)
 			assert.Equal(t, cas.expected, strings.Split(strings.TrimSpace(parsed), "\n"))
 		})
 	}
-
 }
 
 func TestParseTag(t *testing.T) {
@@ -205,6 +220,7 @@ func TestParseTag(t *testing.T) {
 	for title, cas := range cases {
 		t.Run(title, func(t *testing.T) {
 			t.Parallel()
+
 			result := parseTag([]byte(cas.input))
 			assert.Equal(t, cas.expected, result)
 		})
@@ -301,6 +317,7 @@ func TestSingle_AcceptBlock_AdditionalCases(t *testing.T) {
 	for title, cas := range cases {
 		t.Run(title, func(t *testing.T) {
 			t.Parallel()
+
 			result := cas.single.acceptBlock(cas.tags)
 			assert.Equal(t, cas.expected, result)
 		})

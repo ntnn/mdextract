@@ -34,9 +34,11 @@ func split(s string) []string {
 	if len(s) == 0 {
 		return []string{}
 	}
+
 	return strings.Split(s, ",")
 }
 
+// FlagSet returns the flag set for the Single struct.
 func (single *Single) FlagSet() *flag.FlagSet {
 	fs := flag.NewFlagSet("single", flag.ExitOnError)
 	fs.Func("tags", "Tags to filter code blocks, comma-separated", func(s string) error {
@@ -48,6 +50,7 @@ func (single *Single) FlagSet() *flag.FlagSet {
 		return nil
 	})
 	fs.BoolVar(&single.ExcludeComments, "exclude-comments", false, "Exclude code blocks inside HTML comments")
+
 	return fs
 }
 
@@ -55,14 +58,18 @@ func parseTag(b []byte) []string {
 	if len(b) == 0 {
 		return []string{}
 	}
+
 	ret := []string{}
-	for _, tag := range strings.Split(string(b), " ") {
+
+	for tag := range strings.SplitSeq(string(b), " ") {
 		tag = strings.TrimSpace(tag)
 		if len(tag) == 0 {
 			continue
 		}
+
 		ret = append(ret, tag)
 	}
+
 	return ret
 }
 
@@ -74,6 +81,7 @@ func (single Single) acceptBlock(tags []string) bool {
 			}
 		}
 	}
+
 	if len(single.ExcludeTags) > 0 {
 		for _, exTag := range single.ExcludeTags {
 			if slices.Contains(tags, exTag) {
@@ -81,28 +89,35 @@ func (single Single) acceptBlock(tags []string) bool {
 			}
 		}
 	}
+
 	return true
 }
 
+// ExtractFromFile reads a markdown file from the given path and
+// extracts code block contents from it based on the specified tags.
 func (single Single) ExtractFromFile(p string) (string, error) {
-	b, err := os.ReadFile(p)
+	b, err := os.ReadFile(p) //nolint:gosec
 	if err != nil {
 		return "", err
 	}
+
 	return single.Extract(b)
 }
 
+// Extract extracts code block contents from the given markdown data
+// based on the specified tags.
 func (single Single) Extract(data []byte) (string, error) {
 	builder := &strings.Builder{}
 	node := markdown.Parse(data, nil)
 
-	ast.WalkFunc(node, ast.NodeVisitorFunc(func(node ast.Node, entering bool) ast.WalkStatus {
+	ast.WalkFunc(node, ast.NodeVisitorFunc(func(node ast.Node, _ bool) ast.WalkStatus {
 		switch n := node.(type) {
 		case *ast.CodeBlock:
 			tags := parseTag(n.Info)
 			if !single.acceptBlock(tags) {
 				return ast.GoToNext
 			}
+
 			builder.Write(n.Literal)
 		case *ast.HTMLBlock:
 			// an HTML block might be a comment with a code block that
@@ -114,12 +129,15 @@ func (single Single) Extract(data []byte) (string, error) {
 			// blocks
 			comment := bytes.TrimPrefix(n.Literal, []byte("<!--"))
 			comment = bytes.TrimSuffix(comment, []byte("-->"))
+
 			content, err := single.Extract(comment)
 			if err != nil {
 				return ast.Terminate
 			}
+
 			builder.WriteString(content)
 		}
+
 		return ast.GoToNext
 	}))
 

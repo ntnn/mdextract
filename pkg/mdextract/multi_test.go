@@ -3,6 +3,7 @@ package mdextract
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -75,6 +76,7 @@ func TestParseFileTag(t *testing.T) {
 	for title, cas := range cases {
 		t.Run(title, func(t *testing.T) {
 			t.Parallel()
+
 			file, tags := parseFileTag([]byte(cas.input))
 			assert.Equal(t, cas.file, file)
 			assert.Equal(t, cas.tags, tags)
@@ -214,7 +216,17 @@ func TestMulti_Extract_TableDriven(t *testing.T) {
 		},
 		"three files with mixed languages": {
 			multi: &Multi{},
-			input: "```go file=main.go\npackage main\n```\n```yaml file=config.yml\nkey: value\n```\n```bash file=scripts/build.sh\necho build\n```",
+			input: strings.Join([]string{
+				"```go file=main.go",
+				"package main",
+				"```",
+				"```yaml file=config.yml",
+				"key: value",
+				"```",
+				"```bash file=scripts/build.sh",
+				"echo build",
+				"```",
+			}, "\n"),
 			expected: map[string]string{
 				"main.go":          "package main\n",
 				"config.yml":       "key: value\n",
@@ -251,7 +263,7 @@ func TestMulti_ExtractFromFileAndWrite_Successful(t *testing.T) {
 	outputFile := filepath.Join(tmpDir, "test.go")
 	mdContent := []byte("```go file=" + outputFile + "\npackage main\n```")
 	mdFile := filepath.Join(tmpDir, "test.md")
-	err := os.WriteFile(mdFile, mdContent, 0644)
+	err := os.WriteFile(mdFile, mdContent, 0600)
 	require.NoError(t, err)
 
 	multi := &Multi{}
@@ -259,7 +271,7 @@ func TestMulti_ExtractFromFileAndWrite_Successful(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify the file was created
-	content, err := os.ReadFile(outputFile)
+	content, err := os.ReadFile(outputFile) //nolint:gosec
 	require.NoError(t, err)
 	assert.Equal(t, "package main\n", string(content))
 }
@@ -273,18 +285,18 @@ func TestMulti_ExtractFromFileAndWrite_MultipleFiles(t *testing.T) {
 	outputFile2 := filepath.Join(tmpDir, "two.go")
 	mdContent := []byte("```go file=" + outputFile1 + "\nfirst\n```\n```go file=" + outputFile2 + "\nsecond\n```")
 	mdFile := filepath.Join(tmpDir, "test.md")
-	err := os.WriteFile(mdFile, mdContent, 0644)
+	err := os.WriteFile(mdFile, mdContent, 0600)
 	require.NoError(t, err)
 
 	multi := &Multi{}
 	err = multi.ExtractFromFileAndWrite(mdFile)
 	require.NoError(t, err)
 
-	content1, err := os.ReadFile(outputFile1)
+	content1, err := os.ReadFile(outputFile1) //nolint:gosec
 	require.NoError(t, err)
 	assert.Equal(t, "first\n", string(content1))
 
-	content2, err := os.ReadFile(outputFile2)
+	content2, err := os.ReadFile(outputFile2) //nolint:gosec
 	require.NoError(t, err)
 	assert.Equal(t, "second\n", string(content2))
 }
