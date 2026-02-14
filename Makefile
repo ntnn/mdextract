@@ -7,7 +7,7 @@ check: fmt lint test
 .PHONY: build
 build:
 	@mkdir -p bin
-	$(GO) build -o ./bin/mdextract ./cmd/mdextract
+	$(GO) build -o ./bin/mdextract .
 
 .PHONY: docker-build
 docker-build:
