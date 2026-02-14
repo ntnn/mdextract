@@ -43,7 +43,7 @@ make build
 
 Extract all Go code blocks:
 ```bash ci
-./bin/mdextract -tags go README.md
+./bin/mdextract -tags go -output - README.md
 ```
 
 Extract code blocks with specific tags and write to a file:

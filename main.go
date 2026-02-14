@@ -23,15 +23,20 @@ func main() {
 func run(ctx context.Context) error {
 	s := &mdextract.Single{}
 	fs := s.FlagSet()
-	fOutput := fs.String("output", "-", "Output file ('-' for stdout, not compatible with -multi)")
+	fOutput := fs.String("output", "", "Output file ('-' for stdout, not compatible with -multi)")
 	fMulti := fs.Bool("multi", false, "Extract multiple sections based on the file tag (not compatible with -output)")
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		return err
 	}
 
-	if *fMulti && *fOutput != "-" {
+	if *fMulti && *fOutput != "" {
 		fs.PrintDefaults()
 		return fmt.Errorf("-multi and -output cannot be used together")
+	}
+
+	if !*fMulti && *fOutput == "" {
+		fs.PrintDefaults()
+		return fmt.Errorf("-multi or -output must be specified")
 	}
 
 	if fs.NArg() == 0 {
