@@ -1,29 +1,28 @@
+// Package mdextract is a tool for extracting markdown sections from
+// files. It can be used to extract documentation from source code
+// files, or to extract specific sections from markdown files.
 package main
 
 import (
-	"context"
-	"fmt"
+	"errors"
 	"log"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/ntnn/mdextract/pkg/mdextract"
 )
 
 func main() {
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer cancel()
-
-	if err := run(ctx); err != nil {
+	if err := run(); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func run(ctx context.Context) error {
-	s := &mdextract.Single{}
-	fs := s.FlagSet()
+func run() error {
+	multi := &mdextract.Multi{}
+	fs := multi.FlagSet()
+
 	fOutput := fs.String("output", "", "Output file ('-' for stdout, not compatible with -multi)")
+
 	fMulti := fs.Bool("multi", false, "Extract multiple sections based on the file tag (not compatible with -output)")
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		return err
@@ -31,37 +30,40 @@ func run(ctx context.Context) error {
 
 	if *fMulti && *fOutput != "" {
 		fs.PrintDefaults()
-		return fmt.Errorf("-multi and -output cannot be used together")
+		return errors.New("-multi and -output cannot be used together")
 	}
 
 	if !*fMulti && *fOutput == "" {
 		fs.PrintDefaults()
-		return fmt.Errorf("-multi or -output must be specified")
+		return errors.New("-multi or -output must be specified")
 	}
 
 	if fs.NArg() == 0 {
 		fs.PrintDefaults()
-		return fmt.Errorf("no input files specified")
+		return errors.New("no input files specified")
 	}
 
 	if *fMulti {
-		m := &mdextract.Multi{
-			Single: *s,
-		}
-		return doMulti(ctx, m, fs.Args())
+		return doMulti(multi, fs.Args())
 	}
-	return doSingle(ctx, s, *fOutput, fs.Args())
+
+	return doSingle(&multi.Single, *fOutput, multi.FileMode, fs.Args())
 }
 
-func doSingle(ctx context.Context, s *mdextract.Single, outputPath string, args []string) error {
+func doSingle(s *mdextract.Single, outputPath string, fileMode uint32, args []string) error {
 	f := os.Stdout
+
+	closeFn := func() error { return nil }
+
 	if outputPath != "-" {
 		var err error
-		f, err = os.OpenFile(outputPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+		f, err = os.OpenFile(outputPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.FileMode(fileMode)) //nolint:gosec
 		if err != nil {
 			return err
 		}
-		defer f.Close()
+
+		closeFn = f.Close
 	}
 
 	for _, input := range args {
@@ -69,38 +71,46 @@ func doSingle(ctx context.Context, s *mdextract.Single, outputPath string, args 
 		if err != nil {
 			return err
 		}
-		if _, err := f.Write([]byte(out)); err != nil {
+
+		if _, err := f.WriteString(out); err != nil {
 			return err
 		}
 	}
 
-	return nil
+	return closeFn()
 }
 
-func doMulti(ctx context.Context, m *mdextract.Multi, args []string) error {
+// in contrast to Multi.ExtractFromFileAndWrite, this function does not
+// truncate files when writing. This allows parsing multiple files in
+// one go and accumulating their output in the same files.
+func doMulti(m *mdextract.Multi, args []string) error {
 	for _, input := range args {
 		out, err := m.ExtractFromFile(input)
 		if err != nil {
 			return err
 		}
+
 		for file, content := range out {
-			if err := writeFileNoTruncate(file, []byte(content), 0644); err != nil {
+			if err := writeFileNoTruncate(file, []byte(content), os.FileMode(m.FileMode)); err != nil {
 				return err
 			}
 		}
 	}
+
 	return nil
 }
 
-// copied from os.WriteFile but without truncation
+// copied from os.WriteFile but without truncation.
 func writeFileNoTruncate(name string, data []byte, perm os.FileMode) error {
-	f, err := os.OpenFile(name, os.O_WRONLY|os.O_CREATE, perm)
+	f, err := os.OpenFile(name, os.O_WRONLY|os.O_CREATE, perm) //nolint:gosec
 	if err != nil {
 		return err
 	}
+
 	_, err = f.Write(data)
 	if err1 := f.Close(); err1 != nil && err == nil {
 		err = err1
 	}
+
 	return err
 }
