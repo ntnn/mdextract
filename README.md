@@ -8,7 +8,7 @@ only relevant for CI but not for human readers.
 `tags` are words after the backticks on the first line of a fenced code block:
 
     ```go ci test
-    // This Go code block has tags: "ci" and "test"
+    // This Go code block has tags: "go", "ci" and "test"
     package main
     ```
 
@@ -24,10 +24,14 @@ mdextract can be run in multi mode, in which case code blocks are
 extracted into multiple files based on the `file` tag:
 
     ```python ci file=script.py
-    print("This code block will be extracted to script.py")
+    print("This code block will be extracted to script.py if run with tags python and ci")
     ```
 
 Blocks without a `file` tag are ignored in multi mode.
+
+    ```python ci
+    print("This code block will be ignored if run with tags python and ci")
+    ```
 
 ### Examples
 

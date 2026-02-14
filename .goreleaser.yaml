@@ -12,7 +12,7 @@ builds:
       - linux
       - windows
       - darwin
-    main: ./cmd/mdextract
+    main: .
 
 archives:
   - formats: [tar.gz]
