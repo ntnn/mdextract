@@ -18,6 +18,23 @@ package main
 ```
 -->
 
+### GitHub Action
+
+The GitHub Action is available with `ntnn/mdextract` and can be used to extract code blocks in a workflow step:
+
+```yaml
+- name: Extract code blocks
+  uses: ntnn/mdextract
+  with:
+    input: README.md TEST.md
+    tags: go,ci
+    output: extracted.go
+```
+
+The outputs are documented in the [action.yml](./action.yml) file.
+
+More examples are available in [the example workflow](.github/workflows/example.yml).
+
 ### Multi mode and file tags
 
 mdextract can be run in multi mode, in which case code blocks are
@@ -43,7 +60,7 @@ make build
 
 Extract all Go code blocks:
 ```bash ci
-./bin/mdextract -tags go README.md
+./bin/mdextract -tags go -output - README.md
 ```
 
 Extract code blocks with specific tags and write to a file:
@@ -90,27 +107,3 @@ if ! grep -q 'is: an example' example.yaml; then
 fi
 ```
 -->
-
-## GitHub Action Usage
-
-### Prerequisites
-
-The action requires Go to be available in the workflow:
-
-```yaml noci
-- uses: actions/setup-go
-```
-
-<!--
-```bash ci
-if grep -q 'actions/setup-go' example.yaml; then
-    echo "example.yaml contains unexpected content"
-    cat example.yaml
-    exit 1
-fi
-```
--->
-
-The inputs are documented in the `action.yml` file.
-
-Examples are available in [.github/workflows/example.yml](.github/workflows/example.yml).
