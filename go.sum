@@ -1,7 +1,7 @@
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/gomarkdown/markdown v0.0.0-20260417124207-7d523f7318df h1:Mwihr/o+v4L5h56rwHLOE20+hh7Okhwno5BHz3zDuao=
-github.com/gomarkdown/markdown v0.0.0-20260417124207-7d523f7318df/go.mod h1:JDGcbDT52eL4fju3sZ4TeHGsQwhG9nbDV21aMyhwPoA=
+github.com/gomarkdown/markdown v0.0.0-20260725000948-8435af3f5984 h1:6DE2PprLLZelQJu7AeebZLxjcENwC1plRZHDvd5uMCU=
+github.com/gomarkdown/markdown v0.0.0-20260725000948-8435af3f5984/go.mod h1:JDGcbDT52eL4fju3sZ4TeHGsQwhG9nbDV21aMyhwPoA=
 github.com/ntnn/mindl v0.1.1 h1:vX71o61Vb6sNJuUdZxqjg+okoaxChQB5VE2llrSUrzE=
 github.com/ntnn/mindl v0.1.1/go.mod h1:fiva9uxPeEte6Wo5SR0iTaNiUrtphILf5ckDgHRhLdw=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
