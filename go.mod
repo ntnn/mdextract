@@ -3,7 +3,7 @@ module github.com/ntnn/mdextract
 go 1.25.0
 
 require (
-	github.com/gomarkdown/markdown v0.0.0-20260818103853-6d1f24fc3a11
+	github.com/gomarkdown/markdown v0.0.0-20260824154242-13c5cf49db8d
 	github.com/stretchr/testify v1.12.1
 )
 
