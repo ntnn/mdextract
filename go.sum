@@ -1,5 +1,5 @@
-github.com/gomarkdown/markdown v0.0.0-20261026184151-79e163b7b632 h1:kycupqEwsSTMkgv8OB0mbaWw47OAIc0cXfnM106CSVs=
-github.com/gomarkdown/markdown v0.0.0-20261026184151-79e163b7b632/go.mod h1:zLCvXLlUnS5tvOi4hpJgzzpJsq0+dliwn85VbPh1JbQ=
+github.com/gomarkdown/markdown v0.0.0-20261031165833-acfab5edc1ce h1:a5HfnXP3+Dxr9zcLzW1/p31ZWPXA/INEimJUKUHbGo8=
+github.com/gomarkdown/markdown v0.0.0-20261031165833-acfab5edc1ce/go.mod h1:zLCvXLlUnS5tvOi4hpJgzzpJsq0+dliwn85VbPh1JbQ=
 github.com/ntnn/mindl v0.1.1 h1:vX71o61Vb6sNJuUdZxqjg+okoaxChQB5VE2llrSUrzE=
 github.com/ntnn/mindl v0.1.1/go.mod h1:fiva9uxPeEte6Wo5SR0iTaNiUrtphILf5ckDgHRhLdw=
 github.com/stretchr/testify v1.12.1 h1:EuwCh5fleGS7H32xRwO3wRGT7DxrDhLAT6FF8MpWDWE=
